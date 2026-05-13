@@ -24,7 +24,7 @@ class Solution:
         # NOTE: Just in case if the else block has not been hit.
         # nums = [1, 2, 3], for example.
         global_max = max(global_max, current)
-        current = 0
+        current = 1
 
         return int(global_max)
 
