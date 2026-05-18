@@ -41,7 +41,24 @@ class Solution:
             if candidate in set_:
                 return True
 
-            set_.add(nums[R])
+            set_.add(candidate)
+
+        return False
+
+
+class Solution:
+    def containsNearbyDuplicate(self, nums: List[int], k: int) -> bool:
+        window = set()
+        L = 0
+
+        for R in range(len(nums)):
+            if (R - L) > k:
+                window.remove(nums[L])
+                L += 1
+            candidate = nums[R]
+            if candidate in window:
+                return True
+            window.add(candidate)
 
         return False
 
