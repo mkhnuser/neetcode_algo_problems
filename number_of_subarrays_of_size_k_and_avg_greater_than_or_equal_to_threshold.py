@@ -3,16 +3,31 @@ from typing import List
 
 class Solution:
     def numOfSubarrays(self, arr: List[int], k: int, threshold: int) -> int:
-        n = len(arr)
         counter = 0
 
-        for i in range(n):
-            if n - i < k:
-                # NOTE: The subarrays have to be precisely of length k.
+        for i in range(len(arr)):
+            for j in range(i, len(arr)):
+                arr_size = (j - i) + 1
+                if arr_size != k:
+                    continue
+                summation = sum(arr[i : j + 1])
+                avg = summation / k
+                if avg >= threshold:
+                    counter += 1
+
+        return counter
+
+
+class Solution:
+    def numOfSubarrays(self, arr: List[int], k: int, threshold: int) -> int:
+        counter = 0
+
+        for i in range(len(arr)):
+            R = min(len(arr) - 1, i + k - 1)
+            arr_size = (R - i) + 1
+            if arr_size != k:
                 continue
-            summation = arr[i]
-            for j in range(i + 1, min(i + k, n)):
-                summation += arr[j]
+            summation = sum(arr[i : R + 1])
             avg = summation / k
             if avg >= threshold:
                 counter += 1
@@ -22,57 +37,25 @@ class Solution:
 
 class Solution:
     def numOfSubarrays(self, arr: List[int], k: int, threshold: int) -> int:
-        n = len(arr)
         counter = 0
 
-        for L in range(n):
-            R = min((L + k) - 1, n - 1)
-            if (R - L) + 1 < k:
-                continue
-
-            # NOTE: At this point, window = [L, R] is of size 3.
-            summation = sum(arr[L : R + 1])
-            avg = summation / k
-            if avg >= threshold:
-                counter += 1
-
-        return counter
-
-
-class Solution:
-    def numOfSubarrays(self, arr: List[int], k: int, threshold: int) -> int:
-        n = len(arr)
-        counter = 0
+        L = 0
         summation = 0
+        for R in range(len(arr)):
+            arr_size = (R - L) + 1
 
-        # NOTE: 1. Initialize a window.
-        # 2. Run the window.
+            if arr_size > k:
+                summation -= arr[L]
+                L += 1
 
-        for i in range(0, k):
-            if i >= n:
-                # NOTE: An input array may be of size 1 or 2.
-                break
-            summation += arr[i]
-
-        avg = summation / k
-        if avg >= threshold:
-            counter += 1
-
-        if n <= k:
-            return counter
-
-        # NOTE: At this point, the first window iteration has been done.
-
-        for L in range(1, n):
-            R = (L + k) - 1
-
-            if R >= n:
-                break
-
-            summation -= arr[L - 1]
             summation += arr[R]
-            avg = summation / k
 
+            arr_size = (R - L) + 1
+
+            if arr_size < k:
+                continue
+
+            avg = summation / k
             if avg >= threshold:
                 counter += 1
 
@@ -82,7 +65,6 @@ class Solution:
 def test():
     arr = [2, 2, 2, 2, 5, 5, 5, 8]
     #      0  1  2  3  4  5  6  7.    n = 8.
-    #                        L  R
     k = 3
     threshold = 4
     sol = Solution()
