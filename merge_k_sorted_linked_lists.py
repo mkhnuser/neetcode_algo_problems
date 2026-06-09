@@ -1,3 +1,4 @@
+import heapq
 from typing import Optional, List
 
 
@@ -7,8 +8,26 @@ class ListNode:
         self.next = next
 
 
+class NodeWrapper:
+    def __init__(self, node: ListNode) -> None:
+        self.node = node
+
+    def __le__(self, other) -> None:
+        return self.node.val <= other.node.val
+
+    def __lt__(self, other) -> None:
+        return self.node.val < other.node.val
+
+
 class Solution:
     def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        # return self.solve_using_min_heap(lists)
+        return self.solve_using_mapping(lists)
+
+    def solve_using_mapping(
+        self,
+        lists: List[Optional[ListNode]],
+    ) -> Optional[ListNode]:
         if not lists:
             return None
 
@@ -35,3 +54,34 @@ class Solution:
                 del mapping[min_index]
 
         return dummy_head.next
+
+    def solve_using_min_heap(
+        self,
+        lists: List[Optional[ListNode]],
+    ) -> Optional[ListNode]:
+        if not lists:
+            return None
+
+        heap = []
+        dummy_node = ListNode(-1)
+
+        for node in lists:
+            if node is not None:
+                wrapper = NodeWrapper(node)
+                heapq.heappush(heap, wrapper)
+
+        h = dummy_node
+
+        while heap:
+            min_wrapper = heapq.heappop(heap)
+            min_node = min_wrapper.node
+            next_node = min_node.next
+
+            if next_node is not None:
+                wrapper = NodeWrapper(next_node)
+                heapq.heappush(heap, wrapper)
+
+            h.next = min_node
+            h = h.next
+
+        return dummy_node.next

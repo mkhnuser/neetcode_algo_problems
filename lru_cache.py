@@ -4,105 +4,78 @@ from typing import MutableMapping
 class Node:
     def __init__(
         self,
-        value: int,
-        next_node: "Node | None" = None,
-        prev_node: "Node | None" = None,
+        val: int,
+        next: "Node | None" = None,
+        prev: "Node | None" = None,
     ) -> None:
-        self.value = value
-        self.next_node = next_node
-        self.prev_node = prev_node
+        self.val = val
+        self.next = next
+        self.prev = prev
 
 
 class LRUCache:
     def __init__(self, capacity: int):
-        self.capacity: int = capacity
+        self.capacity = capacity
         self.key_to_node_mapping: MutableMapping[int, Node] = {}
         self.node_to_key_mapping: MutableMapping[Node, int] = {}
-        self.head: Node | None = None
-        self.tail: Node | None = None
-        self.list_length: int = 0
+        self.head = None
+        self.tail = None
 
     def get(self, key: int) -> int:
-        node_to_return = self.key_to_node_mapping.get(key)
-
-        if node_to_return is None:
-            return -1
-
-        self.detach(node_to_return)
-        self.insert_at_head(node_to_return)
-        return node_to_return.value
+        if key in self.key_to_node_mapping:
+            node = self.key_to_node_mapping[key]
+            # NOTE: Touch the node so that it does not get evicted.
+            ##
+            self.remove_from_the_list(node)
+            self.move_to_the_head(node)
+            ##
+            #
+            return node.val
+        return -1
 
     def put(self, key: int, value: int) -> None:
-        # NOTE: Case 1, the node is present.
         if key in self.key_to_node_mapping:
-            node_to_update = self.key_to_node_mapping[key]
-            node_to_update.value = value
-            self.detach(node_to_update)
-            self.insert_at_head(node_to_update)
+            node = self.key_to_node_mapping[key]
+            node.val = value
+            self.remove_from_the_list(node)
+            self.move_to_the_head(node)
             return
 
-        # NOTE: Case 2, the node is not present.
-        node = Node(value=value)
+        node = Node(val=value)
+
+        if len(self.key_to_node_mapping) >= self.capacity:
+            assert self.tail is not None  # NOTE: Capacity is at least 1.
+
+            lru_node = self.tail
+            self.remove_from_the_list(lru_node)
+            lru_node_key = self.node_to_key_mapping[lru_node]
+            del self.key_to_node_mapping[lru_node_key]
+            del self.node_to_key_mapping[lru_node]
+
+        self.move_to_the_head(node)
         self.key_to_node_mapping[key] = node
         self.node_to_key_mapping[node] = key
 
-        if self.list_length >= self.capacity:
-            assert self.tail is not None  # NOTE: capacity is at least one.
-            tail = self.tail
-            self.detach(tail)
-            key_to_delete = self.node_to_key_mapping[tail]
-            del self.key_to_node_mapping[key_to_delete]
-            del self.node_to_key_mapping[tail]
-            self.list_length -= 1
+    def remove_from_the_list(self, node: Node) -> None:
+        if node is self.head:
+            self.head = node.next
+        if node is self.tail:
+            self.tail = node.prev
 
-        self.insert_at_head(node)
-        self.list_length += 1
+        if node.next is not None:
+            node.next.prev = node.prev
+        if node.prev is not None:
+            node.prev.next = node.next
 
-    def insert_at_head(self, node):
-        node.prev_node = None
-        node.next_node = self.head
+        node.next = None
+        node.prev = None
 
-        if self.head:
-            self.head.prev_node = node
-        else:
+    def move_to_the_head(self, node) -> None:
+        if self.head is None:
             self.tail = node
+        else:
+            prev_head = self.head
+            node.next = prev_head
+            prev_head.prev = node
 
         self.head = node
-
-    def detach(self, node):
-        if node.prev_node:
-            node.prev_node.next_node = node.next_node
-        else:
-            self.head = node.next_node
-
-        if node.next_node:
-            node.next_node.prev_node = node.prev_node
-        else:
-            self.tail = node.prev_node
-
-        node.prev_node = None
-        node.next_node = None
-
-
-def test_one():
-    lru_cache = LRUCache(2)
-    lru_cache.put(1, 10)  # ;  // cache: {1=10}
-    print(lru_cache.get(1))  # ;      // return 10
-    lru_cache.put(2, 20)  # ;  // cache: {1=10, 2=20}
-    lru_cache.put(3, 30)  # ;  // cache: {2=20, 3=30}, key=1 was evicted
-    print(lru_cache.get(2))  # ;      // returns 20
-    print(lru_cache.get(1))  # ;      // return -1 (not found)
-
-
-def test_two():
-    lru_cache = LRUCache(2)
-    lru_cache.put(1, 1)
-    lru_cache.put(2, 2)
-    print(lru_cache.get(1))
-    lru_cache.put(3, 3)
-    print(lru_cache.get(2))
-
-
-if __name__ == "__main__":
-    test_one()
-    test_two()
