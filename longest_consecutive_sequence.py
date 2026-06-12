@@ -3,30 +3,21 @@ from typing import List
 
 class Solution:
     def longestConsecutive(self, nums: List[int]) -> int:
-        # NOTE: The next element is precisely one more than the current element.
         if not nums:
             return 0
 
-        nums = list(set(nums))
-        nums = sorted(nums)
-        global_max = float("-inf")
-        current = 1
+        nums_set = set(nums)
+        res = 0
 
-        for i in range(1, len(nums)):
-            current_num = nums[i]
-            prev_num = nums[i - 1]
-            if current_num - prev_num == 1:
-                current += 1
-            else:
-                global_max = max(global_max, current)
-                current = 1
+        for num in nums_set:
+            if (num - 1) not in nums_set:
+                c = 1
 
-        # NOTE: Just in case if the else block has not been hit.
-        # nums = [1, 2, 3], for example.
-        global_max = max(global_max, current)
-        current = 1
+                while (num + c) in nums_set:
+                    c += 1
+                res = max(c, res)
 
-        return int(global_max)
+        return res
 
 
 def test():
