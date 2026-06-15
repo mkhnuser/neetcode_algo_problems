@@ -100,21 +100,12 @@ class MinHeap:
             self._heapify_down(min_value_index)
 
 
-class KthLargest:
-    def __init__(self, k: int, nums: List[int]):
-        self.k = k
-        self.heap = MinHeap()
-        self.heap.heapify(nums)
-        self.shrink_heap()
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        min_heap = MinHeap()
+        min_heap.heapify([-num for num in nums])
 
-    def add(self, val: int) -> int:
-        if len(self.heap.data) >= self.k and val <= self.heap.top():
-            return self.heap.top()
+        for _ in range(k - 1):
+            min_heap.pop()
 
-        self.heap.push(val)
-        self.shrink_heap()
-        return self.heap.top()
-
-    def shrink_heap(self) -> None:
-        while len(self.heap.data) > self.k:
-            self.heap.pop()
+        return -min_heap.pop()

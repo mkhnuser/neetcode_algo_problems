@@ -14,14 +14,14 @@ class MinHeap:
         self.data.append(val)
         self._heapify_up(len(self.data) - 1)
 
-    def pop(self) -> int:
+    def pop(self) -> int | None:
         # NOTE:
         # Store the output.
         # Replace the output with the last element.
         # Heapify down.
         # Handle an empty heap and heap of size one edge cases.
 
-        output = -1
+        output = None
         if not self.data:
             return output
 
@@ -100,21 +100,27 @@ class MinHeap:
             self._heapify_down(min_value_index)
 
 
-class KthLargest:
-    def __init__(self, k: int, nums: List[int]):
-        self.k = k
-        self.heap = MinHeap()
-        self.heap.heapify(nums)
-        self.shrink_heap()
+class Solution:
+    def __init__(self) -> None:
+        self.min_heap = MinHeap()
 
-    def add(self, val: int) -> int:
-        if len(self.heap.data) >= self.k and val <= self.heap.top():
-            return self.heap.top()
+    def lastStoneWeight(self, stones: List[int]) -> int:
+        # NOTE: Given: [4, 1, 0], compute: [-4, -1, 0].
+        self.min_heap.heapify([-w for w in stones])
 
-        self.heap.push(val)
-        self.shrink_heap()
-        return self.heap.top()
+        while len(self.min_heap.data) >= 2:
+            x = self.min_heap.pop()
+            y = self.min_heap.pop()
+            assert x is not None
+            assert y is not None
 
-    def shrink_heap(self) -> None:
-        while len(self.heap.data) > self.k:
-            self.heap.pop()
+            maximum = max(x, y)
+            minimum = min(x, y)
+            new_weight = maximum - minimum
+            if new_weight != 0:
+                self.min_heap.push(-new_weight)
+
+        if len(self.min_heap.data) == 1:
+            return -self.min_heap.top()
+
+        return 0

@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 
@@ -100,21 +101,17 @@ class MinHeap:
             self._heapify_down(min_value_index)
 
 
-class KthLargest:
-    def __init__(self, k: int, nums: List[int]):
-        self.k = k
-        self.heap = MinHeap()
-        self.heap.heapify(nums)
-        self.shrink_heap()
+class Solution:
+    def kClosest(self, points: List[List[int]], k: int) -> List[List[int]]:
+        min_heap = MinHeap()
 
-    def add(self, val: int) -> int:
-        if len(self.heap.data) >= self.k and val <= self.heap.top():
-            return self.heap.top()
+        for point in points:
+            dist_to_origin = self.obtain_dist_to_origin(point)
+            min_heap.push((dist_to_origin, point[0], point[1]))
 
-        self.heap.push(val)
-        self.shrink_heap()
-        return self.heap.top()
+        return [min_heap.pop()[1:] for _ in range(k)]
 
-    def shrink_heap(self) -> None:
-        while len(self.heap.data) > self.k:
-            self.heap.pop()
+    def obtain_dist_to_origin(self, point: list[int]) -> float:
+        x = point[0]
+        y = point[1]
+        return math.sqrt((x**2) + (y**2))
