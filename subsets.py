@@ -3,47 +3,36 @@ from typing import List
 
 class Solution:
     def subsets(self, nums: List[int]) -> List[List[int]]:
+        # index = 0
+        # current_subset = []
+        # output = []
+        # self.backtrack(index, current_subset, nums, output)
+        # return output
+        return self.iterate(nums)
+
+    def iterate(self, nums: List[int]) -> List[List[int]]:
         output = [[]]
-        self.solve_with_iteration(nums, output)
+        for num in nums:
+            new_output = []
+            for s in output:
+                new_s = s.copy()
+                new_s.append(num)
+                new_output.append(new_s)
+            output += new_output
         return output
 
-    def solve_with_iteration(self, nums: List[int], output: List[List[int]]) -> None:
-        for num in nums:
-            output += [subset + [num] for subset in output]
-
-    # def subsets(self, nums: List[int]) -> List[List[int]]:
-    #     index = 0
-    #     output = []
-    #     current_subset = []
-    #     self.solve_with_backtracking(index, nums, output, current_subset)
-    #     return output
-
-    def solve_with_backtracking(
+    def backtrack(
         self,
         index: int,
+        current_subset: List[int],
         nums: List[int],
         output: List[List[int]],
-        current_subset: List[int],
     ) -> None:
         if index >= len(nums):
             output.append(current_subset.copy())
             return
 
-        s = current_subset.copy()
-        s.append(nums[index])
-        self.solve_with_backtracking(index + 1, nums, output, s)
-        s.pop()
-        self.solve_with_backtracking(index + 1, nums, output, s)
-
-
-def test():
-    nums = [1, 2]
-    sol = Solution()
-    print(sol.subsets(nums))
-    nums = [1, 2, 3]
-    sol = Solution()
-    print(sol.subsets(nums))
-
-
-if __name__ == "__main__":
-    test()
+        current_subset.append(nums[index])
+        self.backtrack(index + 1, current_subset, nums, output)
+        current_subset.pop()
+        self.backtrack(index + 1, current_subset, nums, output)
