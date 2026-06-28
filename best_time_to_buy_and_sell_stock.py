@@ -3,50 +3,41 @@ from typing import List
 
 class Solution:
     def maxProfit(self, prices: List[int]) -> int:
-        # NOTE: A single day to buy, a single day in the future to sell.
-        max_profit = float("-inf")
+        p = 0
 
-        for i in range(len(prices)):
+        for i in range(len(prices) - 1):
             for j in range(i + 1, len(prices)):
-                buy_price = prices[i]
-                sell_price = prices[j]
-                profit = sell_price - buy_price
+                current_profit = prices[j] - prices[i]
+                if current_profit > p:
+                    p = current_profit
 
-                if profit > max_profit:
-                    max_profit = profit
-
-        return max(max_profit, 0)
+        return p
 
 
 class Solution:
     def maxProfit(self, prices: List[int]) -> int:
-        # NOTE: A single day to buy, a single day in the future to sell.
-        L = 0
-        R = 1
-        max_profit = 0
+        p = 0
+        l = 0
+        r = 1
 
-        while R < len(prices):
-            if prices[L] < prices[R]:
-                profit = prices[R] - prices[L]
-                if profit > max_profit:
-                    max_profit = profit
+        while r < len(prices):
+            if prices[l] < prices[r]:
+                c = prices[r] - prices[l]
+                p = max(p, c)
             else:
-                # NOTE: No point to buy high and sell low.
-                L = R
+                l = r
+            r += 1
 
-            R += 1
-
-        return max_profit
+        return p
 
 
-def test():
-    prices = [10, 1, 5, 6, 7, 1]
-    sol = Solution()
-    print(sol.maxProfit(prices))
-    prices = [10, 8, 7, 5, 2]
-    sol = Solution()
-    print(sol.maxProfit(prices))
+class Solution:
+    def maxProfit(self, prices: List[int]) -> int:
+        p = 0
+        buy_price = prices[0]
 
+        for sell_price in prices:
+            p = max(p, sell_price - buy_price)
+            buy_price = min(buy_price, sell_price)
 
-if __name__ == "__main__":
-    test()
+        return p
