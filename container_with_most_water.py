@@ -3,47 +3,38 @@ from typing import List
 
 class Solution:
     def maxArea(self, heights: List[int]) -> int:
-        max_volume = float("-inf")
-        n = len(heights)
+        max_amount = float("-inf")
 
-        for i in range(n):
-            for j in range(i + 1, n):
-                min_height = min(heights[i], heights[j])
-                current_volume = min_height * (j - i)
-                if current_volume > max_volume:
-                    max_volume = current_volume
+        for i in range(len(heights) - 1):
+            for j in range(i + 1, len(heights)):
+                left_height = heights[i]
+                right_height = heights[j]
 
-        return max_volume
+                min_height = min(left_height, right_height)
+                h = min_height
+                w = abs(i - j)
+                max_amount = max(max_amount, h * w)
+
+        return max_amount
 
 
 class Solution:
     def maxArea(self, heights: List[int]) -> int:
-        max_volume = float("-inf")
-        n = len(heights)
-        left_pointer = 0
-        right_pointer = n - 1
+        max_amount = float("-inf")
+        L = 0
+        R = len(heights) - 1
 
-        while left_pointer < right_pointer:
-            left_height = heights[left_pointer]
-            right_height = heights[right_pointer]
-            min_height = min(left_height, right_height)
-            area = min_height * (right_pointer - left_pointer)
+        while L < R:
+            left_height = heights[L]
+            right_height = heights[R]
 
-            if area > max_volume:
-                max_volume = area
+            w = abs(L - R)
+            h = min(left_height, right_height)
+            max_amount = max(max_amount, h * w)
+
             if left_height <= right_height:
-                left_pointer += 1
+                L += 1
             else:
-                right_pointer -= 1
+                R -= 1
 
-        return max_volume
-
-
-def test():
-    heights = [1, 7, 2, 5, 4, 7, 3, 6]
-    sol = Solution()
-    print(sol.maxArea(heights))
-
-
-if __name__ == "__main__":
-    test()
+        return max_amount
