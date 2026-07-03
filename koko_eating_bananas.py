@@ -3,36 +3,59 @@ from typing import List
 
 
 class Solution:
+    # WARNING: This solution times out, use math.ceil for piles.
     def minEatingSpeed(self, piles: List[int], h: int) -> int:
-        speed = 1
+        # NOTE: h is un upper bound on the number of iterations.
+        # NOTE: Try to do binary search on the rate of eating k.
+        L = 1
+        R = max(piles)
+        output = R
 
-        while True:
-            hours_spent = 0
+        while L <= R:
+            k = (L + R) // 2
 
-            for pile in piles:
-                hours_spent += math.ceil(pile / speed)
+            if self.can_be_eaten(piles, h, k):
+                output = k
+                R = k - 1
+            else:
+                L = k + 1
 
-            if hours_spent <= h:
-                return speed
+        return output
 
-            speed += 1
+    def can_be_eaten(self, piles: List[int], h: int, k: int) -> bool:
+        t = 0
+
+        for pile in piles:
+            while pile > 0:
+                pile -= k
+                t += 1
+
+        return t <= h
 
 
 class Solution:
     def minEatingSpeed(self, piles: List[int], h: int) -> int:
-        lower_bound = 1
-        upper_bound = max(piles)
-        output = lower_bound
+        # NOTE: h is un upper bound on the number of iterations.
+        # NOTE: Try to do binary search on the rate of eating k.
+        L = 1
+        R = max(piles)
+        output = R
 
-        while lower_bound <= upper_bound:
-            k = (lower_bound + upper_bound) // 2
-            hours_spent = 0
-            for pile in piles:
-                hours_spent += math.ceil(pile / k)
-            if hours_spent <= h:
+        while L <= R:
+            k = (L + R) // 2
+
+            if self.can_be_eaten(piles, h, k):
                 output = k
-                upper_bound = k - 1
+                R = k - 1
             else:
-                lower_bound = k + 1
+                L = k + 1
 
         return output
+
+    def can_be_eaten(self, piles: List[int], h: int, k: int) -> bool:
+        t = 0
+
+        for pile in piles:
+            t += math.ceil(pile / k)
+
+        return t <= h
