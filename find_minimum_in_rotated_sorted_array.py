@@ -3,22 +3,41 @@ from typing import List
 
 class Solution:
     def findMin(self, nums: List[int]) -> int:
-        lower_bound = 0
-        upper_bound = len(nums) - 1
-        min_ = nums[0]
+        L = 0
+        R = len(nums) - 1
+        output = float("+inf")
 
-        while lower_bound <= upper_bound:
-            if nums[lower_bound] <= nums[upper_bound]:
-                min_ = min(min_, nums[lower_bound])
-                break
+        while L <= R:
+            middle_index = (L + R) // 2
+            middle_value = nums[middle_index]
+            leftmost_value = nums[L]
+            rightmost_value = nums[R]
+            output = min(output, middle_value)
 
-            middle_index = (lower_bound + upper_bound) // 2
-            cur = nums[middle_index]
-            min_ = min(cur, min_)
-
-            if cur >= nums[lower_bound]:
-                lower_bound = middle_index + 1
+            if leftmost_value <= rightmost_value:
+                # NOTE: A portion with no shift.
+                output = min(output, leftmost_value)
+                return output
             else:
-                upper_bound = middle_index - 1
+                # NOTE: A portion with a shift.
+                if middle_value >= leftmost_value:
+                    L = middle_index + 1
+                else:
+                    R = middle_index - 1
 
-        return min_
+        return output
+
+
+def test() -> None:
+    array = [
+        [4, 5, 6, 7],  # NOTE: No shift.
+        [9, 12, 14, 16, 1, 2],  # NOTE: A shift and go right.
+        [9, 12, 2, 3, 4, 5, 6],  # NOTE: A shift and go left.
+    ]
+    for nums in array:
+        sol = Solution()
+        print(sol.findMin(nums))
+
+
+if __name__ == "__main__":
+    test()
