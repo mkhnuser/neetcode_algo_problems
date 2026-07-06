@@ -1,63 +1,49 @@
 class Solution:
     def lengthOfLongestSubstring(self, s: str) -> int:
-        max_len = 0
+        seen = set()
+        L = 0
+        output = 0
 
-        for i in range(len(s)):
-            seen = set()
+        for R in range(len(s)):
+            char = s[R]
 
-            for j in range(i, len(s)):
-                char = s[j]
-                if char in seen:
-                    break
-                seen.add(char)
+            while char in seen:
+                seen.remove(s[L])
+                L += 1
 
-            max_len = max(max_len, len(seen))
+            seen.add(char)
+            output = max(output, R - L + 1)
 
-        return max_len
+        return output
 
 
 class Solution:
     def lengthOfLongestSubstring(self, s: str) -> int:
-        seen = set()
+        output = 0
+        mapping = {}
         L = 0
-        max_len = 0
 
         for R in range(len(s)):
-            while s[R] in seen:
-                seen.remove(s[L])
-                L += 1
+            if s[R] in mapping:
+                # NOTE: Jump to the correct position immediately.
+                L = max(L, mapping[s[R]] + 1)
+            mapping[s[R]] = R
+            output = max(output, R - L + 1)
 
-            seen.add(s[R])
-            max_len = max(max_len, R - L + 1)
-        return max_len
-
-
-def test():
-    s = "zxyzxyz"
-    #    0123456
-    sol = Solution()
-    print(sol.lengthOfLongestSubstring(s))  # 3
-
-    s = "xxxx"
-    sol = Solution()
-    print(sol.lengthOfLongestSubstring(s))  # 1
-
-    s = "x"
-    sol = Solution()
-    print(sol.lengthOfLongestSubstring(s))  # 1
-
-    s = ""
-    sol = Solution()
-    print(sol.lengthOfLongestSubstring(s))  # 0
-
-    s = "au"
-    sol = Solution()
-    print(sol.lengthOfLongestSubstring(s))  # 2
-
-    s = "dvdf"
-    sol = Solution()
-    print(sol.lengthOfLongestSubstring(s))  # 3
+        return output
 
 
-if __name__ == "__main__":
-    test()
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+        output = 0
+
+        for i in range(len(s)):
+            seen = set()
+            for j in range(i, len(s)):
+                if s[j] in seen:
+                    break
+
+                seen.add(s[j])
+                output = max(output, j - i + 1)
+
+        return output
