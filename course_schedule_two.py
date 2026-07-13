@@ -3,57 +3,117 @@ from typing import List, Literal, Dict
 
 class Solution:
     def findOrder(self, numCourses: int, prerequisites: List[List[int]]) -> List[int]:
-        colors: List[
-            Literal[
-                "white",
-                "gray",
-                "black",
-            ]
-        ] = ["white" for _ in range(numCourses)]
+        # NOTE: First ensure the graph is a DAG.
+        # Understand: the graph might not be connected.
+        colors: List[Literal["white", "gray", "black"]] = [
+            "white" for _ in range(numCourses)
+        ]
 
         adj_mapping = {}
-
-        # NOTE: Let's represent a depends on b relationship.
-        for a, b in prerequisites:
+        for p in prerequisites:
+            a, b = p
             if a not in adj_mapping:
                 adj_mapping[a] = []
             adj_mapping[a].append(b)
 
-        output = []
-
-        for c in range(numCourses):
-            if colors[c] == "white":
-                if self.dfs(c, adj_mapping, colors, output):
+        for v in range(numCourses):
+            if colors[v] == "white":
+                if self.has_cycle(v, adj_mapping, colors):
                     return []
 
-        return output
+        # NOTE: At this point, there are no cycles in the graph, so topological ordering can be obtained.
+        colors: List[Literal["white", "gray", "black"]] = [
+            "white" for _ in range(numCourses)
+        ]
+        reverse_topological_order = []
+
+        for v in range(numCourses):
+            if colors[v] == "white":
+                self.reverse_topologically_sort(
+                    v,
+                    adj_mapping,
+                    colors,
+                    reverse_topological_order,
+                )
+
+        return reverse_topological_order
+
+    def has_cycle(self, v: int, adj_mapping: Dict, colors: List) -> bool:
+        colors[v] = "gray"
+
+        for n in adj_mapping.get(v, []):
+            if colors[n] == "gray":
+                return True
+
+            if colors[n] == "white":
+                if self.has_cycle(n, adj_mapping, colors):
+                    return True
+
+        colors[v] = "black"
+        return False
+
+    def reverse_topologically_sort(
+        self,
+        v: int,
+        adj_mapping: Dict,
+        colors: List,
+        reverse_topological_order: List,
+    ) -> None:
+        colors[v] = "gray"
+
+        for n in adj_mapping.get(v, []):
+            if colors[n] == "white":
+                self.reverse_topologically_sort(
+                    n, adj_mapping, colors, reverse_topological_order
+                )
+
+        colors[v] = "black"
+        reverse_topological_order.append(v)
+
+
+class Solution:
+    def findOrder(self, numCourses: int, prerequisites: List[List[int]]) -> List[int]:
+        # NOTE: First ensure the graph is a DAG.
+        # Understand: the graph might not be connected.
+        colors: List[Literal["white", "gray", "black"]] = [
+            "white" for _ in range(numCourses)
+        ]
+
+        adj_mapping = {}
+        for p in prerequisites:
+            a, b = p
+            if a not in adj_mapping:
+                adj_mapping[a] = []
+            adj_mapping[a].append(b)
+
+        reverse_topological_order = []
+        for v in range(numCourses):
+            if colors[v] == "white":
+                if self.dfs(v, adj_mapping, colors, reverse_topological_order):
+                    return []
+        return reverse_topological_order
 
     def dfs(
         self,
-        c: int,
-        adj_mapping: Dict[int, List[int]],
-        colors: List[Literal["white", "gray", "black"]],
-        output: list[int],
+        v: int,
+        adj_mapping: Dict,
+        colors: List,
+        reverse_topological_order: List,
     ) -> bool:
-        colors[c] = "gray"
+        """Return `True` if there is a cycle, return `False` otherwise.
 
-        for g in adj_mapping.get(c, []):
-            if colors[g] == "gray":
+        If there is no cycle, a reverse topological order is constructed.
+        """
+        colors[v] = "gray"
+
+        for n in adj_mapping.get(v, []):
+            if colors[n] == "gray":
                 return True
 
-            if colors[g] == "white":
-                if self.dfs(g, adj_mapping, colors, output):
+            if colors[n] == "white":
+                if self.dfs(n, adj_mapping, colors, reverse_topological_order):
                     return True
 
-        colors[c] = "black"
-        output.append(c)
+        colors[v] = "black"
+        reverse_topological_order.append(v)
         return False
-
-
-def test():
-    sol = Solution()
-    print(sol.findOrder(2, [[1, 0]]))
-
-
-if __name__ == "__main__":
-    test()
