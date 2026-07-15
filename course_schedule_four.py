@@ -1,5 +1,4 @@
 from typing import Dict, List
-from queue import Queue
 
 
 class Solution:
@@ -52,6 +51,51 @@ class Solution:
 
         path.remove(u)
         return False
+
+
+class Solution:
+    def checkIfPrerequisite(
+        self,
+        numCourses: int,
+        prerequisites: List[List[int]],
+        queries: List[List[int]],
+    ) -> List[bool]:
+        adj_mapping = {}
+
+        # NOTE: Represent: course -> prereq.
+        for a, b in prerequisites:
+            if b not in adj_mapping:
+                adj_mapping[b] = []
+            adj_mapping[b].append(a)
+
+        prereq_mapping = {}
+        for v in range(numCourses):
+            self.dfs(
+                v,
+                adj_mapping,
+                prereq_mapping,
+            )
+
+        output = []
+        for query in queries:
+            u, v = query
+            output.append(u in prereq_mapping[v])
+        return output
+
+    def dfs(
+        self,
+        u: int,
+        adj_mapping: Dict,
+        prereq_mapping: Dict,
+    ) -> bool:
+        if u not in prereq_mapping:
+            prereq_mapping[u] = set()
+
+            for n in adj_mapping.get(u, []):
+                prereq_mapping[u].update(self.dfs(n, adj_mapping, prereq_mapping))
+
+            prereq_mapping[u].add(u)
+        return prereq_mapping[u]
 
 
 def test() -> None:
