@@ -2,16 +2,16 @@ from typing import List
 
 
 digit_to_letters_mapping = {
-    0: [],
-    1: [],
-    2: ["a", "b", "c"],
-    3: ["d", "e", "f"],
-    4: ["g", "h", "i"],
-    5: ["j", "k", "l"],
-    6: ["m", "n", "o"],
-    7: ["p", "q", "r", "s"],
-    8: ["t", "u", "v"],
-    9: ["w", "x", "y", "z"],
+    "0": "",
+    "1": "",
+    "2": "abc",
+    "3": "def",
+    "4": "ghi",
+    "5": "jkl",
+    "6": "mno",
+    "7": "qprs",
+    "8": "tuv",
+    "9": "wxyz",
 }
 
 
@@ -20,38 +20,28 @@ class Solution:
         if not digits:
             return []
 
-        d_array = [int(d) for d in digits]
-        # output = []
-        # index = 0
-        # current_comb = ""
-        #
-        # self.recurse(d_array, output, current_comb, index)
-        # return output
-        return self.iterate(d_array)
+        return self.iterate(digits)
 
-    def recurse(
-        self,
-        d_array: List[int],
-        output: List[str],
-        current_comb: str,
-        index: int,
-    ) -> None:
-        if index >= len(d_array):
-            output.append(current_comb)
-            return
+    def recurse(self, digits: str, p: int, s: str, output: list[str]) -> None:
+        if p >= len(digits):
+            output.append(s)
+            return None
 
-        for letter in digit_to_letters_mapping[d_array[index]]:
-            current_comb += letter
-            self.recurse(d_array, output, current_comb, index + 1)
-            current_comb = current_comb[:-1]
+        current_digit = digits[p]
+        letters = digit_to_letters_mapping[current_digit]
+        for letter in letters:
+            self.recurse(digits, p + 1, s + letter, output)
 
-    def iterate(self, d_array: List[int]) -> List[str]:
+    def iterate(self, digits: str) -> list[str]:
         output = [""]
-        for d in d_array:
-            t = []
-            for o in output:
-                for letter in digit_to_letters_mapping[d]:
-                    t.append(o + letter)
-            output = t
+
+        for digit in digits:
+            stage = []
+
+            for string in output:
+                for letter in digit_to_letters_mapping[digit]:
+                    stage.append(string + letter)
+
+            output = stage
 
         return output

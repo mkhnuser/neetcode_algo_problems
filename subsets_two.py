@@ -5,27 +5,29 @@ class Solution:
     def subsetsWithDup(self, nums: List[int]) -> List[List[int]]:
         nums.sort()
         output = []
-        index = 0
-        current_subset = []
-        self.backtrack(index, current_subset, nums, output)
+        self.gen(nums, [], 0, output)
         return output
 
-    def backtrack(
+    def gen(
         self,
-        index: int,
-        current_subset: List[int],
         nums: List[int],
+        s: List[int],
+        p: int,
         output: List[List[int]],
     ) -> None:
-        if index >= len(nums):
-            output.append(current_subset.copy())
-            return
+        if p >= len(nums):
+            output.append(s.copy())
+            return None
 
-        current_subset.append(nums[index])
-        self.backtrack(index + 1, current_subset, nums, output)
-        current_subset.pop()
+        # NOTE: Include the current num.
+        s.append(nums[p])
+        self.gen(nums, s, p + 1, output)
 
-        while index + 1 < len(nums) and nums[index] == nums[index + 1]:
-            index += 1
+        s.pop()
 
-        self.backtrack(index + 1, current_subset, nums, output)
+        # NOTE: Exclude every occurrence of the current num.
+        t = p
+        while t < len(nums) and nums[t] == nums[p]:
+            t += 1
+
+        self.gen(nums, s, t, output)

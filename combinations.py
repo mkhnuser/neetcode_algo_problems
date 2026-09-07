@@ -3,29 +3,32 @@ from typing import List
 
 class Solution:
     def combine(self, n: int, k: int) -> List[List[int]]:
-        range_ = list(range(1, n + 1))
+        comb = []
+        p = 1
         output = []
-        index = 0
-        current_comb = []
-        self.gen_combs(range_, output, index, current_comb, k)
+        self.gen(n, n, k, comb, p, output)
         return output
 
-    def gen_combs(
+    def gen(
         self,
-        range_: List[int],
-        output: List[List[int]],
-        index: int,
-        current_comb: List[int],
+        r: int,
+        n: int,
         k: int,
+        comb: list[int],
+        p: int,
+        output: list[list[int]],
     ) -> None:
-        if len(current_comb) == k:
-            output.append(current_comb.copy())
-            return
+        if len(comb) >= k:
+            # NOTE: A combination has been obtained.
+            output.append(comb.copy())
+            return None
 
-        if index >= len(range_):
-            return
+        # NOTE: The case below is redundant and is handled by the loop below it.
+        # if n < k:
+        #     # NOTE: We have not got enough numbers to choose from.
+        #     return None
 
-        current_comb.append(range_[index])
-        self.gen_combs(range_, output, index + 1, current_comb, k)
-        current_comb.pop()
-        self.gen_combs(range_, output, index + 1, current_comb, k)
+        for i in range(p, r + 1):
+            comb.append(i)
+            self.gen(r, n - 1, k, comb, i + 1, output)
+            comb.pop()

@@ -15,3 +15,16 @@ class Solution:
                 set_.add(num)
 
         return list(set_)[0]
+
+
+class Solution:
+    def singleNumber(
+        self,
+        nums: List[int],
+    ) -> int:
+        output = nums[0]
+
+        for num in nums[1:]:
+            output ^= num
+
+        return output
