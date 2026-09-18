@@ -3,34 +3,32 @@ from typing import List
 
 class Solution:
     def rob(self, nums: List[int]) -> int:
-        n = len(nums)
-        if not nums:
+        # NOTE: A B C. => check: A B or B C.
+        # NOTE: A B C D. => check: A B C or B C D.
+        # etc...
+        if len(nums) == 0:
             return 0
-        if n == 1:
-            return max(nums)
+        if len(nums) == 1:
+            return nums[0]
+        if len(nums) == 2:
+            return max(nums[0], nums[1])
 
-        # NOTE: Separate into two cases:
-        # 1. Allow the first house but exclude the last one.
-        # 2. Exclude the last house but allow the first one.
+        return max(
+            self.calculate(nums, 1, len(nums) - 1),
+            self.calculate(nums, 0, len(nums) - 2),
+        )
 
-        output1 = self.dp_solution(nums[:-1], n - 1)
-        output2 = self.dp_solution(nums[1:], n - 1)
-        return max(output1, output2)
+    def calculate(self, nums: List[int], L: int, R: int) -> int:
+        # NOTE:
+        # a = max profit up until the prev house inclusively.
+        # b = max profit up until the current house inclusively.
+        a = nums[L]
+        b = max(nums[L], nums[L + 1])
 
-    def dp_solution(self, nums: List[int], n: int) -> int:
-        if not nums:
-            return 0
-        if n == 1:
-            return max(nums)
+        for i in range(L + 2, R + 1):
+            a, b = b, max(nums[i] + a, b)
 
-        dp = [0] * n
-        dp[0] = nums[0]
-        dp[1] = max(nums[0], nums[1])
-
-        for j in range(2, n):
-            dp[j] = max(dp[j - 1], dp[j - 2] + nums[j])
-
-        return dp[-1]
+        return b
 
 
 def test() -> None:

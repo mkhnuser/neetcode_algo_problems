@@ -1,104 +1,166 @@
-from typing import List
+from typing import List, MutableMapping
 
 
-OK = 0
-OBSTACLE = 1
+DEAD_END_CELL = 1
 
 
 class Solution:
     def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
-        # NOTE: 1 is an obstacle; 0 is a valid vertex.
-        n = len(obstacleGrid)
-        m = len(obstacleGrid[0])
-        return self.recurse_the_solution(obstacleGrid, n, m, 0, 0, n - 1, m - 1, {})
+        matrix = obstacleGrid
+        n = len(matrix)
+        m = len(matrix[0])
+        return self.recurse(0, 0, n - 1, m - 1, matrix, n, m)
 
-    def recurse_the_solution(
+    def recurse(
         self,
-        obstacleGrid: list[list[int]],
-        n: int,
-        m: int,
         i: int,
         j: int,
-        t1: int,
-        t2: int,
-        cache: dict,
+        end_i: int,
+        end_j: int,
+        matrix: List[List[int]],
+        n: int,
+        m: int,
     ) -> int:
-        if i >= n or j >= m:
-            return 0
-        if obstacleGrid[i][j] == OBSTACLE:
+        if i < 0 or i >= n or j < 0 or j >= m:
             return 0
 
-        if i == t1 and j == t2:
+        if matrix[i][j] == DEAD_END_CELL:
+            return 0
+
+        if i == end_i and j == end_j:
+            return 1
+
+        bottom_path = self.recurse(i + 1, j, end_i, end_j, matrix, n, m)
+        right_path = self.recurse(i, j + 1, end_i, end_j, matrix, n, m)
+        return bottom_path + right_path
+
+
+from typing import List, MutableMapping
+
+DEAD_END_CELL = 1
+
+
+class Solution:
+    def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
+        matrix = obstacleGrid
+        n = len(matrix)
+        m = len(matrix[0])
+        return self.recurse(0, 0, n - 1, m - 1, matrix, n, m, {})
+
+    def recurse(
+        self,
+        i: int,
+        j: int,
+        end_i: int,
+        end_j: int,
+        matrix: List[List[int]],
+        n: int,
+        m: int,
+        cache: MutableMapping[tuple[int, int], int],
+    ) -> int:
+        if i < 0 or i >= n or j < 0 or j >= m:
+            return 0
+
+        if matrix[i][j] == DEAD_END_CELL:
+            return 0
+
+        if i == end_i and j == end_j:
             return 1
 
         if (i, j) in cache:
             return cache[(i, j)]
 
-        cache[(i, j)] = self.recurse_the_solution(
-            obstacleGrid,
-            n,
-            m,
-            i + 1,
-            j,
-            t1,
-            t2,
-            cache,
-        ) + self.recurse_the_solution(
-            obstacleGrid,
-            n,
-            m,
-            i,
-            j + 1,
-            t1,
-            t2,
-            cache,
-        )
+        bottom_path = self.recurse(i + 1, j, end_i, end_j, matrix, n, m, cache)
+        right_path = self.recurse(i, j + 1, end_i, end_j, matrix, n, m, cache)
+        cache[(i, j)] = bottom_path + right_path
         return cache[(i, j)]
 
 
 class Solution:
     def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
-        # NOTE: 1 is an obstacle; 0 is a valid vertex.
-        n = len(obstacleGrid)
-        m = len(obstacleGrid[0])
-        return self.dp(obstacleGrid, n, m)
+        matrix = obstacleGrid
+        n = len(matrix)
+        m = len(matrix[0])
 
-    def dp(self, obstacleGrid, n: int, m: int) -> int:
-        prev_row = [0 for _ in range(m)]
+        for i in range(n):
+            for j in range(m):
+                if matrix[i][j] == 1:
+                    matrix[i][j] = "x"
 
-        for r in range(n - 1, -1, -1):
-            cur_row = [0 for _ in range(m)]
+        if matrix[n - 1][m - 1] == "x":
+            return 0
 
-            for c in range(m - 1, -1, -1):
-                if obstacleGrid[r][c] == 1:
-                    cur_row[c] = 0
+        dp = [0 for _ in range(m)]
+        dp[-1] = 1
+
+        for j in range(m - 2, -1, -1):
+            if matrix[-1][j] == "x":
+                break
+            dp[j] = 1
+
+        for i in range(n - 2, -1, -1):
+            current_dp_row = [0 for _ in range(m)]
+
+            for j in range(m - 1, -1, -1):
+                if matrix[i][j] == "x":
+                    dp[j] = 0
+                    continue
+
+                if j == m - 1:
+                    current_dp_row[j] = dp[j]
                 else:
-                    if r == n - 1 and c == m - 1:
-                        cur_row[c] = 1
-                    elif c == m - 1:
-                        cur_row[c] = prev_row[c]
-                    else:
-                        cur_row[c] = prev_row[c] + cur_row[c + 1]
+                    current_dp_row[j] = dp[j] + current_dp_row[j + 1]
 
-            prev_row = cur_row
+            dp = current_dp_row
 
-        return prev_row[0]
+        return dp[0]
+
+
+class Solution:
+    def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
+        matrix = obstacleGrid
+        n = len(matrix)
+        m = len(matrix[0])
+
+        if matrix[n - 1][m - 1] == 1:
+            return 0
+
+        dp = [0 for _ in range(m)]
+        dp[-1] = 1
+
+        for j in range(m - 2, -1, -1):
+            if matrix[-1][j] == 1:
+                break
+            dp[j] = 1
+
+        for i in range(n - 2, -1, -1):
+            current_dp_row = [0 for _ in range(m)]
+
+            for j in range(m - 1, -1, -1):
+                if matrix[i][j] == 1:
+                    dp[j] = 0
+                    continue
+
+                if j == m - 1:
+                    current_dp_row[j] = dp[j]
+                else:
+                    current_dp_row[j] = dp[j] + current_dp_row[j + 1]
+
+            dp = current_dp_row
+
+        return dp[0]
 
 
 def test() -> None:
-    obstacleGrid = [
-        [0, 0, 0],
-        [0, 0, 1],
-        [0, 1, 0],
-    ]
+    obstacleGrid = [[0, 0, 0], [0, 0, 0], [0, 1, 0]]
     sol = Solution()
     print(sol.uniquePathsWithObstacles(obstacleGrid))
 
-    obstacleGrid = [
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 0, 0],
-    ]
+    obstacleGrid = [[0, 0, 0], [0, 0, 1], [0, 1, 0]]
+    sol = Solution()
+    print(sol.uniquePathsWithObstacles(obstacleGrid))
+
+    obstacleGrid = [[0, 0, 0], [0, 1, 0], [0, 0, 0]]
     sol = Solution()
     print(sol.uniquePathsWithObstacles(obstacleGrid))
 
