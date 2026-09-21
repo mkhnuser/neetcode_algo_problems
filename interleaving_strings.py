@@ -1,65 +1,77 @@
 class Solution:
     def isInterleave(self, s1: str, s2: str, s3: str) -> bool:
-        if not s1 and not s2 and not s3:
-            return True
+        def dfs(i, j, k):
+            if k == len(s3):
+                return (i == len(s1)) and (j == len(s2))
 
-        i = 0
-        j = 0
-        k = 0
-        return self.recurse(s1, s2, s3, i, j, k, {})
+            if i < len(s1) and s1[i] == s3[k]:
+                if dfs(i + 1, j, k + 1):
+                    return True
 
-    def recurse(
-        self,
-        s1: str,
-        s2: str,
-        s3: str,
-        i: int,
-        j: int,
-        k: int,
-        memo: dict,
-    ) -> bool:
-        if k >= len(s3):
-            return (i >= len(s1)) and (j >= len(s2))
+            if j < len(s2) and s2[j] == s3[k]:
+                if dfs(i, j + 1, k + 1):
+                    return True
 
-        if (i, j, k) in memo:
-            return memo[(i, j, k)]
+            return False
 
-        if i < len(s1) and s1[i] == s3[k]:
-            rec = self.recurse(s1, s2, s3, i + 1, j, k + 1, memo)
-            memo[(i + 1, j, k + 1)] = rec
-            if rec:
-                return True
-
-        if j < len(s2) and s2[j] == s3[k]:
-            rec = self.recurse(s1, s2, s3, i, j + 1, k + 1, memo)
-            memo[(i, j + 1, k + 1)] = rec
-            if rec:
-                return True
-
-        return False
+        return dfs(0, 0, 0)
 
 
 class Solution:
     def isInterleave(self, s1: str, s2: str, s3: str) -> bool:
-        if not s1 and not s2 and not s3:
-            return True
-        if len(s3) != len(s1) + len(s2):
+        n = len(s1)
+        m = len(s2)
+        z = len(s3)
+
+        if n + m != z:
             return False
 
-        return self.dp(s1, s2, s3)
+        def dfs(i, j, k, cache):
+            if k == z:
+                return (i == n) and (j == m)
 
-    def dp(self, s1: str, s2: str, s3: str) -> bool:
-        N = len(s1)
-        M = len(s2)
+            # NOTE: Let cache[(i, j, k)] answer the question:
+            # - Given s1[i:] and s2[j:], is it possible to form s3[k:] by interleaving?
 
-        dp = [[False for _ in range(M + 1)] for __ in range(N + 1)]
-        dp[-1][-1] = True
+            triplet = (i, j, k)
+            if triplet in cache:
+                return cache[triplet]
 
-        for i in range(N, -1, -1):
-            for j in range(M, -1, -1):
-                if i < len(s1) and s1[i] == s3[i + j] and dp[i + 1][j]:
+            if i < n and s1[i] == s3[k]:
+                cache[triplet] = dfs(i + 1, j, k + 1, cache)
+                if cache[triplet]:
+                    return True
+
+            if j < m and s2[j] == s3[k]:
+                cache[triplet] = dfs(i, j + 1, k + 1, cache)
+                if cache[triplet]:
+                    return True
+
+            return False
+
+        return dfs(0, 0, 0, {})
+
+
+class Solution:
+    def isInterleave(self, s1: str, s2: str, s3: str) -> bool:
+        n = len(s1)
+        m = len(s2)
+        z = len(s3)
+
+        if n + m != z:
+            return False
+
+        # NOTE: Let dp[i][j] answer the question:
+        # - Starting from s1[i:] and s2[j:], is it possible to form s3[i + j:] by interleaving?
+        dp = [[False for _ in range(m + 1)] for __ in range(n + 1)]
+        dp[n][m] = True
+
+        for i in range(n, -1, -1):
+            for j in range(m, -1, -1):
+                k = i + j
+                if i < n and s1[i] == s3[k] and dp[i + 1][j]:
                     dp[i][j] = True
-                if j < len(s2) and s2[j] == s3[i + j] and dp[i][j + 1]:
+                if j < m and s2[j] == s3[k] and dp[i][j + 1]:
                     dp[i][j] = True
 
         return dp[0][0]
@@ -81,6 +93,12 @@ def test() -> None:
     s1 = "abc"
     s2 = "xyz"
     s3 = "abxzcy"
+    sol = Solution()
+    print(sol.isInterleave(s1, s2, s3))
+
+    s1 = "aabcc"
+    s2 = "dbbca"
+    s3 = "aadbbcbcac"
     sol = Solution()
     print(sol.isInterleave(s1, s2, s3))
 
