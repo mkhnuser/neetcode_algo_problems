@@ -3,142 +3,119 @@ from typing import List
 
 class Solution:
     def canPartition(self, nums: List[int]) -> bool:
-        subset_indecies = set()
-        self.gen_all_subset_indecies(len(nums), nums, subset_indecies, 0, [])
+        summation = sum(nums)
 
-        for subset1_indecies in subset_indecies:
-            subset1_indecies = set(subset1_indecies)
-            subset2_indecies = set(range(len(nums))) - subset1_indecies
-            subset1_sum = sum(
-                num for i, num in enumerate(nums) if i in subset1_indecies
-            )
-            subset2_sum = sum(
-                num for i, num in enumerate(nums) if i in subset2_indecies
-            )
-            if subset1_sum == subset2_sum:
-                return True
+        if summation % 2 != 0:
+            return False
 
-        return False
+        half_summation = summation // 2
+        i = 0
+        n = len(nums)
+        first_subset_summation = 0
+        # NOTE: sum_1 + sum_2 == 2 * sum_1 == summation <=> sum_1 == half_summation.
+        return self.recurse(nums, n, half_summation, i, first_subset_summation, {})
 
-    def gen_all_subset_indecies(
+    def recurse(
         self,
+        nums: List[int],
         n: int,
-        nums: list[int],
-        subset_indecies: set[tuple],
-        current_index: int,
-        index_seq: list[int],
-    ) -> None:
-        if current_index >= n:
-            subset_indecies.add(tuple(index_seq))
-            return
+        half_summation: int,
+        i: int,
+        first_subset_summation: int,
+        cache: dict,
+    ) -> bool:
+        if i >= n:
+            return first_subset_summation == half_summation
 
-        index_seq.append(current_index)
-        self.gen_all_subset_indecies(
-            n,
+        if (i, first_subset_summation) in cache:
+            return cache[(i, first_subset_summation)]
+
+        first_subset_summation += nums[i]
+        inclusion_path = self.recurse(
             nums,
-            subset_indecies,
-            current_index + 1,
-            index_seq,
-        )
-        index_seq.pop()
-        self.gen_all_subset_indecies(
             n,
-            nums,
-            subset_indecies,
-            current_index + 1,
-            index_seq,
+            half_summation,
+            i + 1,
+            first_subset_summation,
+            cache,
         )
+        if inclusion_path:
+            return True
+
+        first_subset_summation -= nums[i]
+        exclusion_path = self.recurse(
+            nums,
+            n,
+            half_summation,
+            i + 1,
+            first_subset_summation,
+            cache,
+        )
+        if exclusion_path:
+            return True
+
+        cache[(i, first_subset_summation)] = False
+        return False
 
 
 class Solution:
     def canPartition(self, nums: List[int]) -> bool:
-        indecies = self.gen_all_subset_indecies(nums)
+        summation = sum(nums)
 
-        for subset1_indecies in indecies:
-            subset1_indecies = set(subset1_indecies)
-            subset2_indecies = set(range(len(nums))) - subset1_indecies
-            subset1_sum = sum(
-                num for i, num in enumerate(nums) if i in subset1_indecies
-            )
-            subset2_sum = sum(
-                num for i, num in enumerate(nums) if i in subset2_indecies
-            )
-            if subset1_sum == subset2_sum:
+        if summation % 2 != 0:
+            return False
+
+        half_summation = summation // 2
+
+        set_ = {0}
+
+        for i in range(len(nums) - 1, -1, -1):
+            stage = set_.copy()
+            num = nums[i]
+
+            for s in set_:
+                stage.add(s + num)
+
+            if half_summation in stage:
                 return True
 
-        return False
+            set_ = stage
 
-    def gen_all_subset_indecies(self, nums: list[int]) -> list[list]:
-        output = [[]]
-        for i, num in enumerate(nums):
-            stage = []
-            for s in output:
-                new_s = s.copy()
-                new_s.append(i)
-                stage.append(new_s)
-            output.extend(stage)
-        return output
+        return False
 
 
 class Solution:
     def canPartition(self, nums: List[int]) -> bool:
-        # NOTE: X + X = 2X = summation.
-        # Therefore, X = summation / 2.
-        # Moreover, X must be an integer, since all values of nums are ints.
         summation = sum(nums)
-        if summation % 2:
+        if summation % 2 != 0:
             return False
 
         n = len(nums)
-        half_summation = summation / 2
+        half_summation = summation // 2
 
-        def dfs(i: int, target: int, cache: dict) -> bool:
-            if i >= n:
-                return target == 0
-            if target < 0:
-                return False
+        # NOTE: dp[i][j] answers a question:
+        # Given numbers nums[:i + 1], is it possible to reach the target j?
+        dp = [[False] * (half_summation + 1) for _ in range(n + 1)]
 
-            if (i, target) in cache:
-                return cache[(i, target)]
+        # NOTE: Given any number of items, it's always possible to reach the target of zero, just choose nothing.
+        for i in range(n + 1):
+            dp[i][0] = True
 
-            path_with_excluded_num = dfs(i + 1, target, cache)
-            path_with_included_num = dfs(i + 1, target - nums[i], cache)
-            cache[(i, target)] = path_with_excluded_num or path_with_included_num
-            return cache[(i, target)]
+        for i in range(1, n + 1):
+            for j in range(1, half_summation + 1):
+                if nums[i - 1] <= j:
+                    dp[i][j] = dp[i - 1][j] or dp[i - 1][j - nums[i - 1]]
+                else:
+                    dp[i][j] = dp[i - 1][j]
 
-        return dfs(0, half_summation, {})
-
-
-class Solution:
-    def canPartition(self, nums: List[int]) -> bool:
-        # NOTE: X + X = 2X = summation.
-        # Therefore, X = summation / 2.
-        # Moreover, X must be an integer, since all values of nums are ints.
-        summation = sum(nums)
-
-        if summation % 2:
-            return False
-
-        n = len(nums)
-        half_summation = summation / 2
-        event_horizon = set([0])
-
-        for n in nums:
-            replica = event_horizon.copy()
-            for e in event_horizon:
-                replica.add(e + n)
-                if half_summation in replica:
-                    return True
-            event_horizon = replica
-
-        return False
+        return dp[n][half_summation]
 
 
 def test() -> None:
     sol = Solution()
-    print(sol.canPartition([1, 2, 3, 4]))
+    print(sol.canPartition(nums=[1, 2, 3, 4]))
     sol = Solution()
-    print(sol.canPartition([1, 2, 3, 4, 5]))
+    print(sol.canPartition(nums=[1, 2, 3, 4, 5]))
 
 
 if __name__ == "__main__":

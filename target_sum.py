@@ -1,66 +1,43 @@
 from typing import List
-from collections import defaultdict
 
 
 class Solution:
     def findTargetSumWays(self, nums: List[int], target: int) -> int:
         n = len(nums)
+        i = 0
+        cache = {}
+        return self.recurse(nums, n, i, target, cache)
 
-        def dfs(i: int, current_summation: int, cache: dict) -> int:
-            if i >= n:
-                if current_summation == target:
-                    return 1
-                if current_summation < target or current_summation > target:
-                    return 0
+    def recurse(
+        self,
+        nums: List[int],
+        n,
+        i: int,
+        target: int,
+        cache: dict,
+    ) -> int:
+        if i >= n:
+            if target == 0:
+                return 1
+            else:
+                return 0
 
-            if (i, current_summation) in cache:
-                return cache[(i, current_summation)]
+        if (i, target) in cache:
+            return cache[(i, target)]
 
-            positive_path = dfs(i + 1, current_summation + nums[i], {})
-            negative_path = dfs(i + 1, current_summation - nums[i], {})
-            cache[(i, current_summation)] = positive_path + negative_path
-            return cache[(i, current_summation)]
-
-        return dfs(0, 0, {})
-
-
-class Solution:
-    def findTargetSumWays(self, nums: List[int], target: int) -> int:
-        n = len(nums)
-        dp = [defaultdict(int) for _ in range(n + 1)]
-        # NOTE: dp[i][key] returns 0 by default now.
-        # dp[i][cur_sum] = count <=> how many ways are there to form <cur_sum> using up to <nums[:i]> numbers?
-        dp[0][0] = 1
-
-        for i in range(n):
-            for summation, count in dp[i].items():
-                dp[i + 1][summation + nums[i]] += count
-                dp[i + 1][summation - nums[i]] += count
-
-        # NOTE: Given the sum <target>, how many ways are there to reach it using <n> numbers?
-        return dp[n][target]
-
-
-class Solution:
-    def findTargetSumWays(self, nums: List[int], target: int) -> int:
-        n = len(nums)
-        dp = defaultdict(int)
-        dp[0] = 1
-
-        for i in range(n):
-            current_dp = defaultdict(int)
-            for summation, count in dp.items():
-                current_dp[summation + nums[i]] += count
-                current_dp[summation - nums[i]] += count
-            dp = current_dp
-
-        return dp[target]
-
-
-def test() -> None:
-    sol = Solution()
-    print(sol.findTargetSumWays([2, 2, 2], 2))
-
-
-if __name__ == "__main__":
-    test()
+        plus_path = self.recurse(
+            nums,
+            n,
+            i + 1,
+            target + nums[i],
+            cache,
+        )
+        minus_path = self.recurse(
+            nums,
+            n,
+            i + 1,
+            target - nums[i],
+            cache,
+        )
+        cache[(i, target)] = plus_path + minus_path
+        return cache[(i, target)]

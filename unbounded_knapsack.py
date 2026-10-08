@@ -3,100 +3,96 @@ from typing import List
 
 class Solution:
     def maximumProfit(self, profit: List[int], weight: List[int], capacity: int) -> int:
-        return self.recurse(profit, weight, capacity, 0)
+        i = 0
+        n = len(profit)
+        cache = [[-1 for _ in range(capacity + 1)] for __ in range(n)]
+        return self.recurse(profit, weight, n, cache, i, capacity)
 
     def recurse(
         self,
-        profit: List[int],
-        weight: List[int],
-        capacity: int,
+        profit: list[int],
+        weight: list[int],
+        n: int,
+        cache: list[list[int]],
         i: int,
+        capacity: int,
     ) -> int:
-        if i >= len(profit):
+        if i >= n:
             return 0
 
-        # NOTE: Let's skip the current item first.
-        exclusive_path = self.recurse(profit, weight, capacity, i + 1)
+        if cache[i][capacity] != -1:
+            return cache[i][capacity]
 
-        # NOTE: Let's try to include the current item now.
-        inclusive_path = 0
-        new_capacity = capacity - weight[i]
-        if new_capacity >= 0:
-            inclusive_path = profit[i] + self.recurse(profit, weight, new_capacity, i)
+        w = weight[i]
+        p = profit[i]
 
-        return max(exclusive_path, inclusive_path)
+        inclusion_path = 0
+
+        if capacity - w >= 0:
+            inclusion_path = p + self.recurse(profit, weight, n, cache, i, capacity - w)
+
+        exclusion_path = self.recurse(profit, weight, n, cache, i + 1, capacity)
+        cache[i][capacity] = max(inclusion_path, exclusion_path)
+        return cache[i][capacity]
 
 
 class Solution:
     def maximumProfit(self, profit: List[int], weight: List[int], capacity: int) -> int:
-        return self.recurse(profit, weight, capacity, 0, {})
-
-    def recurse(
-        self,
-        profit: List[int],
-        weight: List[int],
-        capacity: int,
-        i: int,
-        cache: dict,
-    ) -> int:
-        if i >= len(profit):
-            return 0
-
-        if (i, capacity) in cache:
-            return cache[(i, capacity)]
-
-        # NOTE: Let's skip the current item first.
-        exclusive_path = self.recurse(profit, weight, capacity, i + 1, cache)
-
-        # NOTE: Let's try to include the current item now, which can be chosen multiple times.
-        inclusive_path = 0
-        new_capacity = capacity - weight[i]
-        if new_capacity >= 0:
-            inclusive_path = profit[i] + self.recurse(
-                profit,
-                weight,
-                new_capacity,
-                i,
-                cache,
-            )
-
-        cache[(i, capacity)] = max(exclusive_path, inclusive_path)
-        return cache[(i, capacity)]
-
-
-class Solution:
-    def maximumProfit(self, profit: List[int], weight: List[int], capacity: int) -> int:
-        return self.dp(profit, weight, capacity)
-
-    def dp(
-        self,
-        profit: List[int],
-        weight: List[int],
-        capacity: int,
-    ) -> int:
         N = len(profit)
         M = capacity
-        dp = [[0 for _ in range(M + 1)] for __ in range(N)]
 
-        for c in range(M + 1):
-            dp[0][c] = profit[0] if weight[0] <= c else 0
+        # NOTE: dp[i][j] answers a question:
+        # Given items 0..i, and a capacity j, what's the max profit?
+        dp = [[0 for _ in range(M + 1)] for __ in range(N)]
 
         for i in range(N):
             dp[i][0] = 0
 
-        for i in range(N):
+        for j in range(M + 1):
+            if weight[0] <= j:
+                dp[0][j] = (j // weight[0]) * profit[0]
+
+        for i in range(1, N):
             for j in range(M + 1):
-                exclusive_path = dp[i - 1][j]
+                inclusion_path = 0
 
-                inclusive_path = 0
-                new_capacity = j - weight[i]
+                if j - weight[i] >= 0:
+                    inclusion_path = profit[i] + dp[i][j - weight[i]]
 
-                if new_capacity >= 0:
-                    inclusive_path = profit[i] + dp[i][new_capacity]
-
-                dp[i][j] = max(exclusive_path, inclusive_path)
+                exclusion_path = dp[i - 1][j]
+                dp[i][j] = max(inclusion_path, exclusion_path)
 
         return dp[N - 1][M]
+
+
+class Solution:
+    def maximumProfit(self, profit: List[int], weight: List[int], capacity: int) -> int:
+        N = len(profit)
+        M = capacity
+
+        # NOTE: dp[i][j] answers a question:
+        # Given items 0..i, and a capacity j, what's the max profit?
+        dp = [0 for _ in range(M + 1)]
+
+        for j in range(M + 1):
+            if weight[0] <= j:
+                dp[j] = (j // weight[0]) * profit[0]
+
+        for i in range(1, N):
+            current_dp_row = [0 for _ in range(M + 1)]
+
+            for j in range(M + 1):
+                inclusion_path = 0
+
+                if j - weight[i] >= 0:
+                    inclusion_path = profit[i] + current_dp_row[j - weight[i]]
+
+                exclusion_path = dp[j]
+                current_dp_row[j] = max(inclusion_path, exclusion_path)
+
+            dp = current_dp_row
+
+        return dp[M]
 
 
 def test() -> None:

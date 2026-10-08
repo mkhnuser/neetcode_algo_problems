@@ -3,20 +3,47 @@ from typing import List
 
 class Solution:
     def lastStoneWeightII(self, stones: List[int]) -> int:
-        stoneSum = sum(stones)
-        target = (stoneSum + 1) // 2
-        dp = {}
+        summation = sum(stones)
+        half_summation = summation // 2
+        cache = {}
+        i = 0
+        return self.recurse(stones, cache, i, 0, half_summation, summation)
 
-        def dfs(i, total):
-            if total >= target or i == len(stones):
-                return abs(total - (stoneSum - total))
-            if (i, total) in dp:
-                return dp[(i, total)]
+    def recurse(
+        self,
+        stones: List[int],
+        cache: dict,
+        i: int,
+        c: int,
+        half_summation: int,
+        summation: int,
+    ) -> int:
+        if i >= len(stones) or c >= half_summation:
+            return abs(c - (summation - c))
 
-            dp[(i, total)] = min(dfs(i + 1, total), dfs(i + 1, total + stones[i]))
-            return dp[(i, total)]
+        if (i, c) in cache:
+            return cache[(i, c)]
 
-        return dfs(0, 0)
+        s = stones[i]
+
+        inclusion_path = self.recurse(
+            stones,
+            cache,
+            i + 1,
+            c + s,
+            half_summation,
+            summation,
+        )
+        exclusion_path = self.recurse(
+            stones,
+            cache,
+            i + 1,
+            c,
+            half_summation,
+            summation,
+        )
+        cache[(i, c)] = min(inclusion_path, exclusion_path)
+        return cache[(i, c)]
 
 
 def test() -> None:
